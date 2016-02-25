@@ -6,7 +6,6 @@ from keras import backend as K
 from keras.datasets import cifar10, cifar100
 from keras.utils import np_utils
 from keras.models import Graph
-from keras.utils.visualize_util import plot
 
 
 def get_cifar10():
@@ -86,6 +85,3 @@ def get_pap_model(channels, rows, cols, classes, loss, optimizer):
     model.add_output(name='output', input='sm')
     model.compile(loss={'output': loss}, optimizer=optimizer)
     return model
-
-def plot_model(model):
-    plot(model)
