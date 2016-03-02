@@ -3,8 +3,13 @@
 import sys
 import numpy as np
 import theano.tensor as T
+import keras
+import pandas
+import os
+from time import time
 from keras.layers.core import MaskedLayer, Activation, Dropout, Dense, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
+from keras.layers.advanced_activations import PReLU
 from keras import backend as K
 from keras.backend.common import _FLOATX
 from keras.datasets import cifar10, cifar100, mnist
@@ -103,26 +108,75 @@ class ActivationPool(MaskedLayer):
         base_config = super(PReLU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-def mrelu():
-    return ActivationPool([T.nnet.relu, step])
+def mrelu(threshold=False):
+    return ActivationPool([T.nnet.relu, step], threshold=threshold)
 
-def get_activation(name):
+def get_activation(model, name):
     if name == 'mrelu':
-        return mrelu()
+        model.add(mrelu())
+    elif name == 'mrelu-t':
+        model.add(mrelu(threshold=True))
+    elif name == 'prelu':
+        model.add(PReLU())
     elif name == 'relu':
-        return Activation('relu')
+        model.add(Activation('relu'))
     else:
         print('Invalid activation fn!')
         sys.exit(1)
 
+class PersistentHistory(keras.callbacks.Callback):
+    def __init__(self, log_name):
+        if os.path.isfile(log_name):
+            answer = raw_input("File already exists, would you like to overwrite? (y/N) ")
+            if answer.lower() == 'y':
+                os.remove(log_name)
+            else:
+                sys.exit(1)
+
+
+        self.log_name = log_name
+
+    def on_train_begin(self, logs={}):
+        self.losses = []
+        self.val_losses = []
+        self.accuracies = []
+        self.val_accuracies = []
+        self.times = []
+
+    def on_batch_end(self, batch, logs={}):
+        self.loss.append(logs.get('loss'))
+        self.accs.append(logs.get('acc'))
+
+    def on_epoch_begin(self, batch, logs={}):
+        self.loss = []
+        self.accs = []
+        self.timer = time()
+
+    def on_epoch_end(self, batch, logs={}):
+        self.times.append(time()-self.timer)
+        self.losses.append(np.array(self.loss).mean())
+        self.val_losses.append(logs.get('val_loss'))
+        self.accuracies.append(np.array(self.accs).mean())
+        self.val_accuracies.append(logs.get('val_acc'))
+
+        d = {
+            'time': self.times,
+            'loss': self.losses,
+            'acc': self.accuracies,
+            'val_loss': self.val_losses,
+            'val_acc': self.val_accuracies
+        }
+
+        df = pandas.DataFrame.from_dict(d)
+        df.to_csv(self.log_name)
+
 def get_mnist_model(activation, lr):
     model = Sequential()
     model.add(Dense(512, input_shape=(784,)))
-    model.add(get_activation(activation))
+    get_activation(model, activation)
     model.add(Dropout(0.2))
     model.add(Dense(512))
-    model.add(Activation('relu'))
-    model.add(get_activation(activation))
+    get_activation(model, activation)
     model.add(Dropout(0.2))
     model.add(Dense(10))
     model.add(Activation('softmax'))

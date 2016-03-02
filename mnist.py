@@ -33,7 +33,8 @@ model = util.get_mnist_model(activation, learning_rate)
 model.fit(X_train, Y_train,
           batch_size=batch_size, nb_epoch=epochs,
           show_accuracy=True, verbose=2,
-          validation_data=(X_test, Y_test))
+          validation_data=(X_test, Y_test),
+          callbacks=[util.PersistentHistory('./mnist-{}-{}.csv'.format(activation, learning_rate))])
 score = model.evaluate(X_test, Y_test, show_accuracy=True, verbose=0)
 print('Test score:', score[0])
 print('Test accuracy:', score[1])
