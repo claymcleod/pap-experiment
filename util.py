@@ -186,17 +186,13 @@ def get_mnist_model(activation, lr):
 
 def get_cifar10_model(activation, lr):
     model = Sequential()
-    model.add(Convolution2D(32, 3, 3, border_mode='same',
+    model.add(Convolution2D(8, 3, 3, border_mode='same',
                         input_shape=(3, 32, 32)))
-    get_activation(model, activation)
-    model.add(Convolution2D(32, 3, 3))
     get_activation(model, activation)
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
 
-    model.add(Convolution2D(64, 3, 3, border_mode='same'))
-    get_activation(model, activation)
-    model.add(Convolution2D(64, 3, 3))
+    model.add(Convolution2D(16, 3, 3, border_mode='same'))
     get_activation(model, activation)
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
