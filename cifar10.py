@@ -37,7 +37,8 @@ model = util.get_cifar10_model(activation, learning_rate)
 if not data_augmentation:
     model.fit(X_train, Y_train,
               batch_size=batch_size, nb_epoch=epochs,
-              show_accuracy=True, verbose=2,
+              show_accuracy=True,
+              shuffle=True,
               validation_data=(X_test, Y_test),
               callbacks=[util.PersistentHistory('./cifar10-{}-{}.csv'.format(activation, learning_rate))])
 else:
