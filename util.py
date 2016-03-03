@@ -201,7 +201,6 @@ def get_cifar10_model(activation, lr):
     # model.add(MaxPooling2D(pool_size=(2, 2)))
     # model.add(Dropout(0.25))
     model.add(Flatten(input_shape=(3, 32, 32)))
-    get_activation(model, activation)
     for i in range(0, 6):
         model.add(Dense(1024))
         get_activation(model, activation)
