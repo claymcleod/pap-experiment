@@ -186,9 +186,11 @@ def get_mnist_model(activation, lr):
 
 def get_cifar10_model(activation, lr):
     model = Sequential()
-    model.add(Convolution2D(64, 3, 3, border_mode='same',
-                        input_shape=(3, 32, 32)))
-    get_activation(model, activation)
+    model.add(Convolution2D(32, 3, 3, border_mode='same',
+                        input_shape=(img_channels, img_rows, img_cols)))
+    model.add(Activation('relu'))
+    model.add(Convolution2D(32, 3, 3))
+    model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
     #
@@ -197,9 +199,9 @@ def get_cifar10_model(activation, lr):
     # model.add(MaxPooling2D(pool_size=(2, 2)))
     # model.add(Dropout(0.25))
     model.add(Flatten())
-    model.add(Dense(512))
+    model.add(Dense(1096))
     get_activation(model, activation)
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.5))
     model.add(Dense(10))
     model.add(Activation('softmax'))
     sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
