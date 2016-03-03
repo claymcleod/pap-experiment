@@ -201,7 +201,7 @@ def get_cifar10_model(activation, lr):
     model.add(Flatten())
     model.add(Dense(1096))
     get_activation(model, activation)
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.25))
     model.add(Dense(1096))
     get_activation(model, activation)
     model.add(Dropout(0.25))
