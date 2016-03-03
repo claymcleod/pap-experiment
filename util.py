@@ -17,6 +17,8 @@ from keras.utils import np_utils
 from keras.models import Graph, Sequential
 from keras.optimizers import SGD
 
+sys.setrecursionlimit(10000)
+
 def get_mnist():
     """Get mnist data."""
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
