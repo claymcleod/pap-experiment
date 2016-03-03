@@ -4,7 +4,7 @@ from keras.preprocessing.image import ImageDataGenerator
 
 parser = argparse.ArgumentParser(description='CIFAR10 script for PAP experiment')
 parser.add_argument('activation', type=str, help='activation function')
-parser.add_argument('-l', '--learningrate',default=0.1,
+parser.add_argument('-l', '--learningrate',default=0.01,
                     type=float, help='learning rate')
 parser.add_argument('-b', '--batchsize', default=32,
                     type=int, help='batch size')
