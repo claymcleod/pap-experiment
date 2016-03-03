@@ -202,10 +202,10 @@ def get_cifar10_model(activation, lr):
     # model.add(Dropout(0.25))
     model.add(Flatten(input_shape=(3, 32, 32)))
     get_activation(model, activation)
-    for i in range(0, 32):
-        model.add(Dense(32))
+    for i in range(0, 6):
+        model.add(Dense(1024))
         get_activation(model, activation)
-        model.add(Dropout(0.25))
+        model.add(Dropout(0.2))
     model.add(Dense(10))
     model.add(Activation('softmax'))
     sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
