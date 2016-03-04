@@ -8,7 +8,7 @@ import pandas
 import os
 from time import time
 from keras.layers.core import MaskedLayer, Activation, Dropout, Dense, Flatten
-from keras.layers.convolutional import Convolution2D, MaxPooling2D
+from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers.advanced_activations import PReLU
 from keras import backend as K
 from keras.backend.common import _FLOATX
