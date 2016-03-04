@@ -7,7 +7,7 @@ parser.add_argument('-l', '--learningrate',default=0.01,
                     type=float, help='learning rate')
 parser.add_argument('-b', '--batchsize', default=32,
                     type=int, help='batch size')
-parser.add_argument('-e', '--epochs', default=100,
+parser.add_argument('-e', '--epochs', default=500,
                     type=int, help='epochs')
 parser.add_argument('-d','--augmentation', default=False, action='store_true')
 args = parser.parse_args()
