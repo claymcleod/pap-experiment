@@ -218,7 +218,7 @@ def get_cifar10_model(activation, lr):
     return model
 
 def build_deepcnet(l, k, activation,
-                  first_c3=False
+                  first_c3=False,
                   dropout=None,
                   nin=False,
                   final_c1=False):
