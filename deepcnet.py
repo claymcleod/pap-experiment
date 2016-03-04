@@ -31,7 +31,7 @@ print('\\==========================/')
 print()
 
 X_train, X_test, Y_train, Y_test = util.get_cifar10()
-dcn = util.build_deepcnet(12, 160, 'relu', dropout=0.2, final_c1=True)
+dcn = util.build_deepcnet(5, 100, activation, dropout=0.2, final_c1=True)
 util.compile_deepcnet(dcn, 0.01)
 
 dcn.fit(X_train, Y_train,
