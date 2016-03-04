@@ -16,8 +16,13 @@ from keras.datasets import cifar10, cifar100, mnist
 from keras.utils import np_utils
 from keras.models import Graph, Sequential
 from keras.optimizers import SGD
+from keras.utils.visualize_util import to_graph
 
 sys.setrecursionlimit(10000)
+
+def plot(model, to_file='model.png'):
+    graph = to_graph(model, show_shape=True)
+    graph.write_png(to_file)
 
 def get_mnist():
     """Get mnist data."""
@@ -211,15 +216,19 @@ def get_cifar10_model(activation, lr):
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
     return model
 
-def build_deepcnet(l, k, use_dropout=False):
+def build_deepcnet(l, k, dropout=None, nin=False):
     model = Sequential()
     model.add(Convolution2D(k, 3, 3, border_mode='same',
                         input_shape=(3, 32, 32)))
     model.add(MaxPooling2D(pool_size=(2, 2)))
+    if dropout: model.add(Dropout(dropout))
+    if nin: model.add(Convolution2D(k, 1, 1))
 
     for i in range(2, l+1):
         model.add(Convolution2D(k*i, 2, 2, border_mode='same'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
+        if dropout: model.add(Dropout(dropout))
+        if nin: model.add(Convolution2D(k*i, 1, 1))
 
     model.add(Convolution2D(k*(l+1), 2, 2))
     model.add(Flatten())
@@ -227,109 +236,6 @@ def build_deepcnet(l, k, use_dropout=False):
     model.add(Activation('softmax'))
     return model
 
-# def get_nonpap_model(channels, rows, cols, classes, loss, optimizer):
-#     model = Graph()
-#     model.add_input(name='input', input_shape=(channels, rows, cols))
-#     model.add_node(Convolution2D(32, 3, 3, border_mode='same'), input='input',
-#                    name='conv1_a')
-#     model.add_node(Activation('relu'), input='conv1_a', name='relu1_a')
-#     model.add_node(Convolution2D(32, 3, 3), input='relu1_a',
-#                    name='conv1_b')
-#     model.add_node(Activation('relu'), input='conv1_b', name='relu1_b')
-#     model.add_node(MaxPooling2D(pool_size=(2, 2)),
-#                    input='relu1_b', name='mp1')
-#     model.add_node(Dropout(0.25), input='mp1', name='do1')
-#
-#     model.add_node(Convolution2D(64, 3, 3, border_mode='same'), input='do1',
-#                    name='conv2_a')
-#     model.add_node(Activation('relu'), input='conv2_a', name='relu2_a')
-#     model.add_node(Convolution2D(64, 3, 3), input='relu2_a',
-#                    name='conv2_b')
-#     model.add_node(Activation('relu'), input='conv2_b', name='relu2_b')
-#     model.add_node(MaxPooling2D(pool_size=(2, 2)),
-#                    input='relu2_b', name='mp2')
-#     model.add_node(Dropout(0.25), input='mp2', name='do2')
-#
-#     model.add_node(Flatten(), input='do2', name='flatten')
-#     model.add_node(Dense(512), input='flatten', name='d1')
-#     model.add_node(Activation('relu'), input='d1', name='relu_out')
-#     model.add_node(Dropout(0.5), input='relu_out', name='d2')
-#     model.add_node(Dense(classes), input='d2', name='d')
-#     model.add_node(Activation('softmax'), input='d', name='sm')
-#     model.add_output(name='output', input='sm')
-#     model.compile(loss={'output': loss}, optimizer=optimizer)
-#     return model
-#
-# def get_pap_model(channels, rows, cols, classes, loss, optimizer):
-#     model = Graph()
-#     model.add_input(name='input', input_shape=(channels, rows, cols))
-#     model.add_node(Convolution2D(32, 3, 3, border_mode='same'), input='input',
-#                    name='conv1_a')
-#     model.add_node(Activation('relu'), input='conv1_a', name='relu1_a')
-#     model.add_node(Step(), input='conv1_a', name='step1_a')
-#     model.add_node(Convolution2D(32, 3, 3), inputs=['relu1_a', 'step1_a'],
-#                    name='conv1_b')
-#     model.add_node(Activation('relu'), input='conv1_b', name='relu1_b')
-#     model.add_node(Step(), input='conv1_b', name='step1_b')
-#     model.add_node(MaxPooling2D(pool_size=(2, 2)),
-#                    inputs=['relu1_b', 'step1_b'], name='mp1')
-#     model.add_node(Dropout(0.25), input='mp1', name='do1')
-#
-#     model.add_node(Convolution2D(64, 3, 3, border_mode='same'), input='do1',
-#                    name='conv2_a')
-#     model.add_node(Activation('relu'), input='conv2_a', name='relu2_a')
-#     model.add_node(Step(), input='conv2_a', name='step2_a')
-#     model.add_node(Convolution2D(64, 3, 3), inputs=['relu2_a', 'step2_a'],
-#                    name='conv2_b')
-#     model.add_node(Activation('relu'), input='conv2_b', name='relu2_b')
-#     model.add_node(Step(), input='conv2_b', name='step2_b')
-#     model.add_node(MaxPooling2D(pool_size=(2, 2)),
-#                    inputs=['relu2_b', 'step2_b'], name='mp2')
-#     model.add_node(Dropout(0.25), input='mp2', name='do2')
-#
-#     model.add_node(Flatten(), input='do2', name='flatten')
-#     model.add_node(Dense(512), input='flatten', name='d1')
-#     model.add_node(Activation('relu'), input='d1', name='relu_out')
-#     model.add_node(Dropout(0.5), input='relu_out', name='d2')
-#     model.add_node(Dense(classes), input='d2', name='d')
-#     model.add_node(Activation('softmax'), input='d', name='sm')
-#     model.add_output(name='output', input='sm')
-#     model.compile(loss={'output': loss}, optimizer=optimizer)
-#     return model
-#
-# def get_pap_model(channels, rows, cols, classes, loss, optimizer):
-#     model = Graph()
-#     model.add_input(name='input', input_shape=(channels, rows, cols))
-#     model.add_node(Convolution2D(32, 3, 3, border_mode='same'), input='input',
-#                    name='conv1_a')
-#     model.add_node(Activation('relu'), input='conv1_a', name='relu1_a')
-#     model.add_node(Step(), input='conv1_a', name='step1_a')
-#     model.add_node(Convolution2D(32, 3, 3), inputs=['relu1_a', 'step1_a'],
-#                    name='conv1_b')
-#     model.add_node(Activation('relu'), input='conv1_b', name='relu1_b')
-#     model.add_node(Step(), input='conv1_b', name='step1_b')
-#     model.add_node(MaxPooling2D(pool_size=(2, 2)),
-#                    inputs=['relu1_b', 'step1_b'], name='mp1')
-#     model.add_node(Dropout(0.25), input='mp1', name='do1')
-#
-#     model.add_node(Convolution2D(64, 3, 3, border_mode='same'), input='do1',
-#                    name='conv2_a')
-#     model.add_node(Activation('relu'), input='conv2_a', name='relu2_a')
-#     model.add_node(Step(), input='conv2_a', name='step2_a')
-#     model.add_node(Convolution2D(64, 3, 3), inputs=['relu2_a', 'step2_a'],
-#                    name='conv2_b')
-#     model.add_node(Activation('relu'), input='conv2_b', name='relu2_b')
-#     model.add_node(Step(), input='conv2_b', name='step2_b')
-#     model.add_node(MaxPooling2D(pool_size=(2, 2)),
-#                    inputs=['relu2_b', 'step2_b'], name='mp2')
-#     model.add_node(Dropout(0.25), input='mp2', name='do2')
-#
-#     model.add_node(Flatten(), input='do2', name='flatten')
-#     model.add_node(Dense(512), input='flatten', name='d1')
-#     model.add_node(Activation('relu'), input='d1', name='relu_out')
-#     model.add_node(Dropout(0.5), input='relu_out', name='d2')
-#     model.add_node(Dense(classes), input='d2', name='d')
-#     model.add_node(Activation('softmax'), input='d', name='sm')
-#     model.add_output(name='output', input='sm')
-#     model.compile(loss={'output': loss}, optimizer=optimizer)
-#     return model
+def compile_deepcnet(model, activation, lr):
+    sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(loss='categorical_crossentropy', optimizer=sgd)
