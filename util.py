@@ -116,8 +116,8 @@ class ActivationPool(MaskedLayer):
         base_config = super(PReLU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-def mrelu(threshold=False):
-    return ActivationPool([T.nnet.relu, step], threshold=threshold)
+def mrelu(**kwargs):
+    return ActivationPool([T.nnet.relu, step], **kwargs)
 
 def get_activation(model, name):
     if name == 'mrelu':
@@ -128,6 +128,8 @@ def get_activation(model, name):
         model.add(PReLU())
     elif name == 'relu':
         model.add(Activation('relu'))
+    elif name == 'hrelu':
+        model.add(mrelu(trainable=False, bcoefs=[0.5. 0.5]))
     else:
         print('Invalid activation fn!')
         sys.exit(1)
