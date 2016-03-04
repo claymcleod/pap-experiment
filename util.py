@@ -129,7 +129,7 @@ def get_activation(model, name):
     elif name == 'relu':
         model.add(Activation('relu'))
     elif name == 'hrelu':
-        model.add(mrelu(trainable=False, bcoefs=[0.5. 0.5]))
+        model.add(mrelu(trainable=False, bcoefs=[0.5, 0.5]))
     else:
         print('Invalid activation fn!')
         sys.exit(1)
