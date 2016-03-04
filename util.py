@@ -217,26 +217,33 @@ def get_cifar10_model(activation, lr):
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
     return model
 
-def build_deepcnet(l, k, dropout=None, nin=False):
+def build_deepcnet(l, k, activation, dropout=None, nin=False):
     model = Sequential()
     model.add(Convolution2D(k, 3, 3, border_mode='same',
                         input_shape=(3, 32, 32)))
+    get_activation(model, activation)
     model.add(MaxPooling2D(pool_size=(2, 2)))
+    if nin:
+        model.add(Convolution2D(k, 1, 1))
+        get_activation(model, activation)
     if dropout: model.add(Dropout(dropout))
-    if nin: model.add(Convolution2D(k, 1, 1))
 
     for i in range(2, l+1):
         model.add(Convolution2D(k*i, 2, 2, border_mode='same'))
+        get_activation(model, activation)
         model.add(MaxPooling2D(pool_size=(2, 2)))
+        if nin:
+            model.add(Convolution2D(k*i, 1, 1))
+            get_activation(model, activation)
         if dropout: model.add(Dropout(dropout))
-        if nin: model.add(Convolution2D(k*i, 1, 1))
 
     model.add(Convolution2D(k*(l+1), 2, 2))
+    get_activation(model, activation)
     model.add(Flatten())
     model.add(Dense(10))
     model.add(Activation('softmax'))
     return model
 
-def compile_deepcnet(model, activation, lr):
+def compile_deepcnet(model, lr):
     sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
