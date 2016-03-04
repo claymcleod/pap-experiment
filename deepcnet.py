@@ -34,7 +34,7 @@ X_train, X_test, Y_train, Y_test = util.get_cifar10()
 dcn = util.build_deepcnet(4, 100, dropout=0.2, nin=True)
 util.compile_deepcnet(dcn, 'relu', 0.01)
 
-model.fit(X_train, Y_train,
+dcn.fit(X_train, Y_train,
           batch_size=batch_size, nb_epoch=epochs,
           show_accuracy=True,
           shuffle=True,
