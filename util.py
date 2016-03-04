@@ -211,6 +211,22 @@ def get_cifar10_model(activation, lr):
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
     return model
 
+def build_deepcnet(l, k, use_dropout=False):
+    model = Sequential()
+    model.add(Convolution2D(k, 3, 3, border_mode='same',
+                        input_shape=(3, 32, 32)))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    for i in range(2, l+1):
+        model.add(Convolution2D(k*i, 2, 2, border_mode='same'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Convolution2D(k*(l+1), 2, 2))
+    model.add(Flatten())
+    model.add(Dense(10))
+    model.add(Activation('softmax'))
+    return model
+
 # def get_nonpap_model(channels, rows, cols, classes, loss, optimizer):
 #     model = Graph()
 #     model.add_input(name='input', input_shape=(channels, rows, cols))
