@@ -16,11 +16,12 @@ from keras.datasets import cifar10, cifar100, mnist
 from keras.utils import np_utils
 from keras.models import Graph, Sequential
 from keras.optimizers import SGD
-from keras.utils.visualize_util import to_graph
+
 
 sys.setrecursionlimit(10000)
 
 def plot(model, to_file='model.png'):
+    from keras.utils.visualize_util import to_graph
     graph = to_graph(model, show_shape=True)
     graph.write_png(to_file)
 
