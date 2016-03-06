@@ -7,7 +7,7 @@ parser.add_argument('-l', '--learningrate',default=0.01,
                     type=float, help='learning rate')
 parser.add_argument('-b', '--batchsize', default=32,
                     type=int, help='batch size')
-parser.add_argument('-e', '--epochs', default=500,
+parser.add_argument('-e', '--epochs', default=100,
                     type=int, help='epochs')
 parser.add_argument('-d','--augmentation', default=False, action='store_true')
 args = parser.parse_args()
@@ -32,7 +32,7 @@ print()
 
 X_train, X_test, Y_train, Y_test = util.get_cifar10()
 dcn = util.build_deepcnet(12, 160, activation, final_c1=True)
-util.compile_deepcnet(dcn, 0.01)
+util.compile_deepcnet(dcn, learning_rate)
 
 dcn.fit(X_train, Y_train,
           batch_size=batch_size, nb_epoch=epochs,

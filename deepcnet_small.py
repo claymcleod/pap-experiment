@@ -21,7 +21,7 @@ epochs = args.epochs
 import util
 print()
 print('/==========================\\')
-print("| Dataset: CIFAR10 (DeepCNet)")
+print("| Dataset: CIFAR10 (DeepCNet_small)")
 print("| Activation: {}".format(activation))
 print("| Learning rate: {}".format(learning_rate))
 print("| Batch size: {}".format(batch_size))
@@ -31,7 +31,7 @@ print('\\==========================/')
 print()
 
 X_train, X_test, Y_train, Y_test = util.get_cifar10()
-dcn = util.build_deepcnet(5, 100, activation, dropout=0.2, final_c1=True)
+dcn = util.build_deepcnet(5, 25, activation, final_c1=True)
 util.compile_deepcnet(dcn, learning_rate)
 
 dcn.fit(X_train, Y_train,
@@ -39,4 +39,4 @@ dcn.fit(X_train, Y_train,
           show_accuracy=True,
           shuffle=True,
           validation_data=(X_test, Y_test),
-          callbacks=[util.PersistentHistory('./cifar10-deepcnet-{}-{}.csv'.format(activation, learning_rate))])
+          callbacks=[util.PersistentHistory('./cifar10-deepcnet_small-{}-{}.csv'.format(activation, learning_rate))])
