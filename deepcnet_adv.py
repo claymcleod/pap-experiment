@@ -31,12 +31,18 @@ print('\\==========================/')
 print()
 
 X_train, X_test, Y_train, Y_test = util.get_cifar10()
-dcn = util.build_deepcnet(12, 160, activation, final_c1=True)
+dcn = util.build_deepcnet(5, 160, activation, final_c1=True)
 util.compile_deepcnet(dcn, learning_rate)
 
-dcn.fit(X_train, Y_train,
-          batch_size=batch_size, nb_epoch=epochs,
-          show_accuracy=True,
-          shuffle=True,
-          validation_data=(X_test, Y_test),
-          callbacks=[util.PersistentHistory('./cifar10-deepcnetadv-{}-{}.csv'.format(activation, learning_rate))])
+cb = util.PersistentHistory('./cifar10-deepcnet_adv-{}-{}.csv'.format(activation, learning_rate))
+for i in range(0, epochs):
+    print("Iteration {} of {}".format(i, epochs))
+    dcn.fit(X_train, Y_train,
+            batch_size=batch_size, nb_epoch=1,
+            show_accuracy=True,
+            shuffle=True,
+            validation_data=(X_test, Y_test),
+            callbacks=[cb])
+    if i>5:
+        dcn.optimizer.lr.set_value(0.01)
+        dcn.optimizer.decay.set_value(1e-5)
