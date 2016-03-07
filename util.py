@@ -20,6 +20,21 @@ from keras.optimizers import SGD
 
 sys.setrecursionlimit(10000)
 
+import tensorflow as tf
+import keras.backend.tensorflow_backend as KTF
+
+def check_session_cores():
+    NUM_CORES = os.environ.get('CORES')
+
+    if NUM_CORES:
+        sess = tf.Session(
+            config=tf.ConfigProto(inter_op_parallelism_threads=int(NUM_CORES),
+                                  intra_op_parallelism_threads=int(NUM_CORES)))
+        KTF._set_session(sess)
+        print("Setting session to have {} cores".format(NUM_CORES))
+
+check_session_cores()
+
 def plot(model, to_file='model.png'):
     from keras.utils.visualize_util import to_graph
     graph = to_graph(model, show_shape=True)
@@ -128,6 +143,8 @@ def get_activation(model, name):
         model.add(PReLU())
     elif name == 'relu':
         model.add(Activation('relu'))
+    elif name == 'experiment':
+        model.add(ActivationPool([K.relu]))
     elif name == 'hrelu':
         model.add(mrelu(trainable=False, bcoefs=[0.5, 0.5]))
     elif name == 'srelu':
