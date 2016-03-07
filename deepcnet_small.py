@@ -1,5 +1,6 @@
 from __future__ import print_function
 import argparse
+from keras.callbacks import LearningRateScheduler
 
 parser = argparse.ArgumentParser(description='CIFAR10 DeepCNet script for PAP experiment')
 parser.add_argument('activation', type=str, help='activation function')
@@ -35,16 +36,11 @@ dcn = util.build_deepcnet(5, 50, activation, final_c1=True)
 util.compile_deepcnet(dcn, learning_rate)
 
 cb = util.PersistentHistory('./cifar10-deepcnet_small-{}-{}.csv'.format(activation, learning_rate))
+lrcb = LearningRateScheduler(lambda x: 0.001 + x * 0.001)
 
-for i in range(0, epochs):
-    print("Iteration {} of {}".format(i, epochs))
-    dcn.fit(X_train, Y_train,
-            batch_size=batch_size, nb_epoch=1,
-            show_accuracy=True,
-            shuffle=True,
-            validation_data=(X_test, Y_test),
-            callbacks=[cb])
-    if i>5:
-        dcn.optimizer.lr.set_value(0.01)
-        dcn.optimizer.decay.set_value(1e-5)
-        print("Changed lr and weight decay")
+dcn.fit(X_train, Y_train,
+        batch_size=batch_size, nb_epoch=epochs,
+        show_accuracy=True,
+        shuffle=True,
+        validation_data=(X_test, Y_test),
+        callbacks=[cb, lrcb])
