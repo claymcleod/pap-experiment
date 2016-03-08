@@ -36,7 +36,13 @@ dcn = util.build_deepcnet(5, 160, activation, final_c1=True)
 util.compile_deepcnet(dcn, learning_rate)
 
 cb = util.PersistentHistory('./cifar10-deepcnet_adv-{}-{}.csv'.format(activation, learning_rate))
-lrcb = LearningRateScheduler(lambda x: 0.001 + x * 0.001)
+def lr_for_epoch(x):
+    if x < 5:
+        return 0.001
+    else:
+        return 0.05
+
+lrcb = LearningRateScheduler(lr_for_epoch)
 
 dcn.fit(X_train, Y_train,
         batch_size=batch_size, nb_epoch=epochs,

@@ -20,20 +20,20 @@ from keras.optimizers import SGD
 
 sys.setrecursionlimit(10000)
 
-# import tensorflow as tf
-# import keras.backend.tensorflow_backend as KTF
-#
-# def check_session_cores():
-#     NUM_CORES = os.environ.get('CORES')
-#
-#     if NUM_CORES:
-#         sess = tf.Session(
-#             config=tf.ConfigProto(inter_op_parallelism_threads=int(NUM_CORES),
-#                                   intra_op_parallelism_threads=int(NUM_CORES)))
-#         KTF._set_session(sess)
-#         print("Setting session to have {} cores".format(NUM_CORES))
-#
-# check_session_cores()
+import tensorflow as tf
+import keras.backend.tensorflow_backend as KTF
+
+def check_session_cores(NUM_CORES):
+    sess = tf.Session(
+        config=tf.ConfigProto(inter_op_parallelism_threads=int(NUM_CORES),
+                              intra_op_parallelism_threads=int(NUM_CORES)))
+    KTF._set_session(sess)
+    print("Setting session to have {} cores".format(NUM_CORES))
+
+NUM_CORES = os.environ.get('CORES')
+
+if NUM_CORES:
+    check_session_cores(NUM_CORES)
 
 def plot(model, to_file='model.png'):
     from keras.utils.visualize_util import to_graph
@@ -75,6 +75,11 @@ def step(x):
     """Theano step function"""
 
     return K.switch(x > 0, 1, 0)
+
+def relu_integral(x):
+    """ReLU piecewise integral"""
+
+    return x**2/2
 
 class Step(MaskedLayer):
     """Step activation module."""
@@ -131,20 +136,23 @@ class ActivationPool(MaskedLayer):
         base_config = super(PReLU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-def mrelu(**kwargs):
-    return ActivationPool([T.nnet.relu, step], **kwargs)
+def mrelu(include_d=True, include_i=False, **kwargs):
+    act_fns = [T.nnet.relu]
+    if include_d: act_fns = act_fns + [step]
+    if include_i: act_fns = act_fns + [relu_integral]
+    return ActivationPool(act_fns, **kwargs)
 
 def get_activation(model, name):
     if name == 'mrelu':
-        model.add(mrelu())
+        model.add(mrelu(bcoefs=[1.0, 0.0]))
     elif name == 'mrelu-t':
         model.add(mrelu(threshold=True))
     elif name == 'prelu':
         model.add(PReLU())
     elif name == 'relu':
         model.add(Activation('relu'))
-    elif name == 'experiment':
-        model.add(ActivationPool([K.relu]))
+    elif name == 'id':
+        model.add(mrelu(include_d=False, include_i=True, threshold=True))
     elif name == 'hrelu':
         model.add(mrelu(trainable=False, bcoefs=[0.5, 0.5]))
     elif name == 'srelu':
