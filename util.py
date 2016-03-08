@@ -20,10 +20,9 @@ from keras.optimizers import SGD
 
 sys.setrecursionlimit(10000)
 
-import tensorflow as tf
-import keras.backend.tensorflow_backend as KTF
-
 def check_session_cores(NUM_CORES):
+    import tensorflow as tf
+    import keras.backend.tensorflow_backend as KTF
     sess = tf.Session(
         config=tf.ConfigProto(inter_op_parallelism_threads=int(NUM_CORES),
                               intra_op_parallelism_threads=int(NUM_CORES)))
