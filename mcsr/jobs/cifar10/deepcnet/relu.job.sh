@@ -2,4 +2,4 @@
 # PBS -M clay.l.mcleod@gmail.com
 
 export THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32
-python src/experiments/cifar10/deepcnet.py relu -l 0.001
+python src/deepcnet.py relu -l 0.001

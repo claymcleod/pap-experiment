@@ -1,6 +1,8 @@
 from __future__ import print_function
-import argparse
+import sys, argparse
 from keras.callbacks import LearningRateScheduler
+
+sys.path.insert(0,'../..')
 
 parser = argparse.ArgumentParser(description='CIFAR10 DeepCNet script for PAP experiment')
 parser.add_argument('activation', type=str, help='activation function')
@@ -18,6 +20,7 @@ activation = args.activation
 learning_rate = args.learningrate
 batch_size = args.batchsize
 epochs = args.epochs
+
 
 import util
 print()
