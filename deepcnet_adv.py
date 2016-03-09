@@ -8,12 +8,10 @@ parser.add_argument('-b', '--batchsize', default=128,
                     type=int, help='batch size')
 parser.add_argument('-e', '--epochs', default=500,
                     type=int, help='epochs')
-parser.add_argument('-d','--augmentation', default=False, action='store_true')
 args = parser.parse_args()
 
-data_augmentation = args.augmentation
+learning_rate = 0.001
 activation = args.activation
-learning_rate = args.learningrate
 batch_size = args.batchsize
 epochs = args.epochs
 
@@ -24,12 +22,11 @@ print("| Dataset: CIFAR10 (DeepCNet adv)")
 print("| Activation: {}".format(activation))
 print("| Batch size: {}".format(batch_size))
 print("| Epochs: {}".format(epochs))
-print('| Data augmentation: {}'.format(data_augmentation))
 print('\\==========================/')
 print()
 
 X_train, X_test, Y_train, Y_test = util.get_cifar10()
-dcn = util.build_deepcnet(5, 160, activation, final_c1=True)
+dcn = util.build_deepcnet(5, 100, activation, final_c1=True)
 util.compile_deepcnet(dcn, learning_rate)
 
 cb = util.PersistentHistory('./cifar10-deepcnet_adv-{}-{}.csv'.format(activation, learning_rate))
