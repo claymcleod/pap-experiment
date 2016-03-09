@@ -8,7 +8,7 @@ parser.add_argument('-l', '--learningrate',default=0.001,
                     type=float, help='learning rate')
 parser.add_argument('-b', '--batchsize', default=128,
                     type=int, help='batch size')
-parser.add_argument('-e', '--epochs', default=100,
+parser.add_argument('-e', '--epochs', default=500,
                     type=int, help='epochs')
 parser.add_argument('-d','--augmentation', default=False, action='store_true')
 args = parser.parse_args()
@@ -36,13 +36,7 @@ dcn = util.build_deepcnet(5, 160, activation, final_c1=True)
 util.compile_deepcnet(dcn, learning_rate)
 
 cb = util.PersistentHistory('./cifar10-deepcnet_adv-{}-{}.csv'.format(activation, learning_rate))
-def lr_for_epoch(x):
-    if x < 5:
-        return 0.001
-    else:
-        return 0.05
-
-lrcb = LearningRateScheduler(lr_for_epoch)
+lrcb = LearningRateScheduler(lambda x: 0.001 + 0.001*x)
 
 dcn.fit(X_train, Y_train,
         batch_size=batch_size, nb_epoch=epochs,
