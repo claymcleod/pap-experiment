@@ -4,8 +4,6 @@ from keras.callbacks import LearningRateScheduler
 
 parser = argparse.ArgumentParser(description='CIFAR10 DeepCNet script for PAP experiment')
 parser.add_argument('activation', type=str, help='activation function')
-parser.add_argument('-l', '--learningrate',default=0.001,
-                    type=float, help='learning rate')
 parser.add_argument('-b', '--batchsize', default=128,
                     type=int, help='batch size')
 parser.add_argument('-e', '--epochs', default=500,
@@ -24,7 +22,6 @@ print()
 print('/==========================\\')
 print("| Dataset: CIFAR10 (DeepCNet_small)")
 print("| Activation: {}".format(activation))
-print("| Learning rate: {}".format(learning_rate))
 print("| Batch size: {}".format(batch_size))
 print("| Epochs: {}".format(epochs))
 print('| Data augmentation: {}'.format(data_augmentation))

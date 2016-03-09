@@ -22,7 +22,7 @@ trials = args.trials
 import util
 print()
 print('/====================\\')
-print("| Dataset: MNIST (Converge)")
+print("| Dataset: MNIST (Std)")
 print("| Activation: {}".format(activation))
 print("| Learning rate: {}".format(learning_rate))
 print("| Batch size: {}".format(batch_size))
@@ -32,15 +32,16 @@ print()
 
 X_train, X_test, Y_train, Y_test = util.get_mnist()
 scores = []
+accs = []
 for t in range(trials):
     print("--- Trial {} ---".format(t))
     model = util.get_mnist_model(activation, learning_rate)
 
     model.fit(X_train, Y_train,
           batch_size=batch_size, nb_epoch=epochs,
-          show_accuracy=True,
+          show_accuracy=True, verbose=1,
           validation_data=(X_test, Y_test))
     score = model.evaluate(X_test, Y_test, show_accuracy=True, verbose=0)
     scores.append(score[0])
-    print('Test score:', score[0])
-    print('Test accuracy:', score[1])
+    accs.append(score[1])
+    util.write_dict_as_csv('{}-mnist-std.csv'.format(activation), {'loss':scores, 'accuracies':accs})

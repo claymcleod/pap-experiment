@@ -39,6 +39,14 @@ def plot(model, to_file='model.png'):
     graph = to_graph(model, show_shape=True)
     graph.write_png(to_file)
 
+def write_dict_as_csv(filename, d):
+    if os.path.isfile(filename):
+        os.remove(filename)
+
+    df = pandas.DataFrame.from_dict(d)
+    df.to_csv(filename, index=False)
+
+
 def get_mnist():
     """Get mnist data."""
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
