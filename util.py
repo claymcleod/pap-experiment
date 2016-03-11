@@ -1,22 +1,23 @@
 """Utilities for PAP thesis."""
 
+import os
 import sys
-import numpy as np
-import theano.tensor as T
 import keras
 import pandas
-import os
+import numpy as np
+import theano.tensor as T
+
 from time import time
 from keras.layers.core import MaskedLayer, Activation, Dropout, Dense, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers.advanced_activations import PReLU
+from keras.layers.normalization import BatchNormalization
 from keras import backend as K
 from keras.backend.common import _FLOATX
 from keras.datasets import cifar10, cifar100, mnist
 from keras.utils import np_utils
 from keras.models import Graph, Sequential
 from keras.optimizers import SGD
-
 
 sys.setrecursionlimit(10000)
 
@@ -169,8 +170,8 @@ def get_activation(model, name):
         sys.exit(1)
 
 class PersistentHistory(keras.callbacks.Callback):
-    def __init__(self, log_name):
-        if os.path.isfile(log_name):
+    def __init__(self, log_name, check_file=False):
+        if os.path.isfile(log_name) and check_file:
             answer = raw_input("File already exists, would you like to overwrite? (y/N) ")
             if answer.lower() == 'y':
                 os.remove(log_name)
@@ -211,8 +212,7 @@ class PersistentHistory(keras.callbacks.Callback):
             'val_acc': self.val_accuracies
         }
 
-        df = pandas.DataFrame.from_dict(d)
-        df.to_csv(self.log_name)
+        write_dict_as_csv(self.log_name, d)
 
 def get_mnist_model(activation, lr):
     model = Sequential()
@@ -228,72 +228,87 @@ def get_mnist_model(activation, lr):
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
     return model
 
-def get_cifar10_model(activation, lr):
-    model = Sequential()
-    #model.add(Convolution2D(32, 3, 3, border_mode='same',
-    #                    input_shape=(3, 32, 32)))
-    #get_activation(model, activation)
-    #model.add(Convolution2D(32, 3, 3))
-    #get_activation(model, activation)
-    #model.add(MaxPooling2D(pool_size=(2, 2)))
-    #model.add(Dropout(0.25))
-    #
-    # model.add(Convolution2D(16, 3, 3, border_mode='same'))
-    # get_activation(model, activation)
-    # model.add(MaxPooling2D(pool_size=(2, 2)))
-    # model.add(Dropout(0.25))
-    model.add(Flatten(input_shape=(3, 32, 32)))
-    for i in range(0, 2):
-        model.add(Dense(9216))
-        get_activation(model, activation)
-        model.add(Dropout(0.05))
-    model.add(Dense(10))
-    model.add(Activation('softmax'))
-    sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(loss='categorical_crossentropy', optimizer=sgd)
-    return model
-
 def build_deepcnet(l, k, activation,
                   first_c3=False,
                   dropout=None,
                   nin=False,
-                  final_c1=False):
+                  final_c1=False,
+                  batch_normalization=False):
     model = Sequential()
 
     model.add(ZeroPadding2D((1, 1), input_shape=(3, 32, 32)))
-    if first_c3: model.add(Convolution2D(k, 3, 3, border_mode='same'))
-    else: model.add(Convolution2D(k, 2, 2, border_mode='same'))
+    if first_c3:
+        model.add(Convolution2D(k, 3, 3, border_mode='same'))
+    else:
+        model.add(Convolution2D(k, 2, 2, border_mode='same'))
     get_activation(model, activation)
+    if batch_normalization:
+        model.add(BatchNormalization())
+
     model.add(MaxPooling2D(pool_size=(2, 2)))
     if nin:
         model.add(ZeroPadding2D((1, 1)))
         model.add(Convolution2D(k, 1, 1))
         get_activation(model, activation)
+        if batch_normalization:
+            model.add(BatchNormalization())
     if dropout: model.add(Dropout(dropout))
 
     for i in range(2, l+1):
         model.add(ZeroPadding2D((1, 1)))
         model.add(Convolution2D(k*i, 2, 2, border_mode='same'))
         get_activation(model, activation)
+        if batch_normalization:
+            model.add(BatchNormalization())
         model.add(MaxPooling2D(pool_size=(2, 2)))
         if nin:
             model.add(ZeroPadding2D((1, 1)))
             model.add(Convolution2D(k*i, 1, 1))
             get_activation(model, activation)
+            if batch_normalization:
+                model.add(BatchNormalization())
         if dropout: model.add(Dropout(dropout))
 
     model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(k*(l+1), 2, 2, border_mode='same'))
     get_activation(model, activation)
+    if batch_normalization:
+        model.add(BatchNormalization())
     if final_c1:
         model.add(ZeroPadding2D((1, 1)))
         model.add(Convolution2D(k*(l+1), 1, 1))
         get_activation(model, activation)
+        if batch_normalization:
+            model.add(BatchNormalization())
     model.add(Flatten())
     model.add(Dense(10))
     model.add(Activation('softmax'))
     return model
 
+def get_deepcnet(nettype, activation, dropout, batch_normalization):
+    nettype = nettype.lower()
+    if nettype == 'reg':
+        return util.build_deepcnet(5, 100, activation,
+                                   dropout=dropout,
+                                   final_c1=True,
+                                   batch_normalization=batch_normalization)
+    elif nettype == 'adv':
+        return util.build_deepcnet(5, 100, activation,
+                                   dropout=dropout,
+                                   final_c1=True,
+                                   batch_normalization=batch_normalization)
+    elif nettype == 'small':
+        return util.build_deepcnet(5, 25, activation
+                                   dropout=dropout,
+                                   final_c1=True,
+                                   batch_normalization=batch_normalization)
+    else:
+        print("Invalid nettype: {}".format(nettype))
+        sys.exit(1)
+
 def compile_deepcnet(model, lr):
     sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
+
+def build_resnet_50():
+    model = Graph()
