@@ -288,7 +288,7 @@ def build_deepcnet(l, k, activation,
 def get_deepcnet(nettype, activation, dropout, batch_normalization):
     nettype = nettype.lower()
     if nettype == 'reg':
-        return build_deepcnet(5, 50, activation,
+        return build_deepcnet(5, 75, activation,
                                    dropout=dropout,
                                    final_c1=True,
                                    batch_normalization=batch_normalization)
@@ -298,7 +298,7 @@ def get_deepcnet(nettype, activation, dropout, batch_normalization):
                                    final_c1=True,
                                    batch_normalization=batch_normalization)
     elif nettype == 'small':
-        return build_deepcnet(5, 10, activation,
+        return build_deepcnet(5, 25, activation,
                                    dropout=dropout,
                                    final_c1=True,
                                    batch_normalization=batch_normalization)
