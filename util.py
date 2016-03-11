@@ -293,7 +293,7 @@ def get_deepcnet(nettype, activation, dropout, batch_normalization):
                                    final_c1=True,
                                    batch_normalization=batch_normalization)
     elif nettype == 'adv':
-        return util.build_deepcnet(5, 100, activation,
+        return util.build_deepcnet(10, 25, activation,
                                    dropout=dropout,
                                    final_c1=True,
                                    batch_normalization=batch_normalization)
