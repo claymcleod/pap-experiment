@@ -12,8 +12,8 @@ parser.add_argument('-e', '--epochs', default=100,
                     type=int, help='epochs')
 parser.add_argument('-l', '--lr', default=0.002,
                     type=int, help='learning_rate')
-parser.add_argument('-d', '--dropout', default=None, type=float,
-                    help='Dropout rate')
+parser.add_argument('-d', '--dropout', default=None,
+                    type=float, help='Dropout rate')
 parser.add_argument('-n', '--normalization', default=False,
                     action='store_true', help='batch normalization')
 args = parser.parse_args()
