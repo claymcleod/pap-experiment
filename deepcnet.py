@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import util
 import argparse
 
 parser = argparse.ArgumentParser(description='CIFAR10 DeepCNet script for PAP experiment')
@@ -26,7 +27,6 @@ batch_normalization = args.normalization
 epochs = args.epochs
 results_file = './cifar10-deepcnet_{}-{}-{}.csv'.format(nettype, activation,
                                                         learning_rate)
-import util
 print()
 print('/==========================\\')
 print("| Dataset: CIFAR10 (DeepCNet)")
