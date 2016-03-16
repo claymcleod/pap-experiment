@@ -3,11 +3,11 @@ import argparse
 
 parser = argparse.ArgumentParser(description='MNIST script for PAP experiment')
 parser.add_argument('activation', type=str, help='activation function')
-parser.add_argument('-l', '--learningrate',default=0.1,
+parser.add_argument('-l', '--learningrate',default=0.01,
                     type=float, help='learning rate')
 parser.add_argument('-b', '--batchsize', default=32,
                     type=int, help='batch size')
-parser.add_argument('-e', '--epochs', default=1000,
+parser.add_argument('-e', '--epochs', default=100,
                     type=int, help='epochs')
 args = parser.parse_args()
 
