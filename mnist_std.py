@@ -3,7 +3,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='MNIST script for PAP experiment')
 parser.add_argument('activation', type=str, help='activation function')
-parser.add_argument('-l', '--learningrate',default=0.1,
+parser.add_argument('-l', '--learningrate',default=0.01,
                     type=float, help='learning rate')
 parser.add_argument('-b', '--batchsize', default=32,
                     type=int, help='batch size')
@@ -44,4 +44,4 @@ for t in range(trials):
     score = model.evaluate(X_test, Y_test, show_accuracy=True, verbose=0)
     scores.append(score[0])
     accs.append(score[1])
-    util.write_dict_as_csv('{}-mnist-std.csv'.format(activation), {'loss':scores, 'accuracies':accs})
+    util.write_dict_as_csv('{}-mnist-std.csv'.format(activation), {'val_loss':scores, 'val_acc':accs})
