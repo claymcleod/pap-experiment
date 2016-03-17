@@ -34,7 +34,7 @@ print()
 
 
 X_train, X_test, Y_train, Y_test = util.get_cifar100()
-resnet = util.build_resnet_34(activation, initialization)
+resnet = util.build_resnet_34(activation, initialization, seed=32)
 util.compile_resnet(resnet, learning_rate)
 cb = util.PersistentHistory(results_file)
 cb2 = ModelCheckpoint('./cifar100-resnet_{}-{}.weights', monitor='val_loss', verbose=0, save_best_only=True, mode='auto')
@@ -45,16 +45,9 @@ resnet.fit({
            batch_size=batch_size,
            nb_epoch=epochs,
            shuffle=True,
+           show_accuracy=True,
            validation_data={
                             'input': X_test,
                             'output': Y_test
                             },
-           callbacks=[cb])
-# dcn.fit(X_train,
-#         Y_train,
-#         batch_size=batch_size,
-#         nb_epoch=epochs,
-#         show_accuracy=True,
-#         shuffle=True,
-#         validation_data=(X_test, Y_test),
-#         callbacks=[cb])
+           callbacks=[cb, cb2])
