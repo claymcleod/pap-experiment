@@ -45,7 +45,10 @@ resnet.fit({
            batch_size=batch_size,
            nb_epoch=epochs,
            shuffle=True,
-           validation_data=(X_test, Y_test),
+           validation_data={
+                            'input': X_test,
+                            'output': Y_test
+                            },
            callbacks=[cb])
 # dcn.fit(X_train,
 #         Y_train,
