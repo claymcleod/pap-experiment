@@ -34,10 +34,13 @@ print()
 
 
 X_train, X_test, Y_train, Y_test = util.get_cifar100()
+print("Building...")
 resnet = util.build_resnet_34(activation, initialization, seed=32)
+print("Compiling...")
 util.compile_resnet(resnet, learning_rate)
 cb = util.PersistentHistory(results_file)
 cb2 = ModelCheckpoint('./cifar100-resnet_{}-{}.weights', monitor='val_loss', verbose=0, save_best_only=True, mode='auto')
+print("Fitting...")
 resnet.fit({
             'input':X_train,
             'output':Y_train
