@@ -152,19 +152,13 @@ def mrelu(include_d=True, include_i=False, **kwargs):
 
 def get_activation(model, name):
     if name == 'mrelu':
-        model.add(mrelu(bcoefs=[1.0, 0.0]))
+        model.add(mrelu())
     elif name == 'mrelu-t':
         model.add(mrelu(threshold=True))
     elif name == 'prelu':
         model.add(PReLU())
     elif name == 'relu':
         model.add(Activation('relu'))
-    elif name == 'id':
-        model.add(mrelu(include_d=False, include_i=True, threshold=True))
-    elif name == 'hrelu':
-        model.add(mrelu(trainable=False, bcoefs=[0.5, 0.5]))
-    elif name == 'srelu':
-        model.add(mrelu(trainable=False, bcoefs=[0.8, 0.2]))
     else:
         print('Invalid activation fn!')
         sys.exit(1)
@@ -224,6 +218,7 @@ def get_mnist_model(activation, lr):
     model.add(Dropout(0.2))
     model.add(Dense(10))
     model.add(Activation('softmax'))
+    print('Compiled with LR: {}'.format(lr))
     sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
     return model
