@@ -1,4 +1,5 @@
 from __future__ import print_function
+import util
 import argparse
 
 parser = argparse.ArgumentParser(description='MNIST script for PAP experiment')
@@ -18,8 +19,9 @@ learning_rate = args.learningrate
 batch_size = args.batchsize
 epochs = args.epochs
 trials = args.trials
+initialization = util.get_init_for_activation(activation)
 
-import util
+
 print()
 print('/====================\\')
 print("| Dataset: MNIST (Std)")
@@ -27,6 +29,7 @@ print("| Activation: {}".format(activation))
 print("| Learning rate: {}".format(learning_rate))
 print("| Batch size: {}".format(batch_size))
 print("| Epochs: {}".format(epochs))
+print("| Initialization: {}".format(initialization))
 print('\\====================/')
 print()
 
@@ -35,7 +38,7 @@ scores = []
 accs = []
 for t in range(trials):
     print("--- Trial {} ---".format(t))
-    model = util.get_mnist_model(activation, learning_rate)
+    model = util.get_mnist_model(activation, initialization, learning_rate)
 
     model.fit(X_train, Y_train,
           batch_size=batch_size, nb_epoch=epochs,

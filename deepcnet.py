@@ -28,6 +28,7 @@ batch_normalization = args.normalization
 epochs = args.epochs
 results_file = './cifar10-deepcnet_{}-{}-{}.csv'.format(nettype, activation,
                                                         learning_rate)
+initialization = util.get_init_for_activation(activation)
 print()
 print('/==========================\\')
 print("| Dataset: CIFAR10 (DeepCNet)")
@@ -38,12 +39,13 @@ print("| Batch size: {}".format(batch_size))
 print("| Batch normalization: {}".format(batch_normalization))
 print("| Dropout: {}".format(dropout))
 print("| Epochs: {}".format(epochs))
+print("| Initialization: {}".format(initialization))
 print('\\==========================/')
 print()
 
 
 X_train, X_test, Y_train, Y_test = util.get_cifar10()
-dcn = util.get_deepcnet(nettype, activation, dropout, batch_normalization)
+dcn = util.get_deepcnet(nettype, activation, initialization, dropout, batch_normalization)
 util.compile_deepcnet(dcn, learning_rate)
 cb = util.PersistentHistory(results_file)
 dcn.fit(X_train,

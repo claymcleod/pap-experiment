@@ -150,18 +150,38 @@ def mrelu(include_d=True, include_i=False, **kwargs):
     if include_i: act_fns = act_fns + [relu_integral]
     return ActivationPool(act_fns, **kwargs)
 
-def get_activation(model, name):
+def get_activation(model, name, graph=False, i=None, fromnodes=None, blockname=None):
+    actfn = None
     if name == 'mrelu':
-        model.add(mrelu())
+        actfn = mrelu()
     elif name == 'mrelu-t':
-        model.add(mrelu(threshold=True))
+        actfn = mrelu(threshold=True)
     elif name == 'prelu':
-        model.add(PReLU())
+        actfn = PReLU()
     elif name == 'relu':
-        model.add(Activation('relu'))
-    else:
+        actfn = Activation('relu')
+
+    if actfn == None:
         print('Invalid activation fn!')
         sys.exit(1)
+
+    if graph:
+        node_name = '{}_act{}'.format(blockname, i)
+        if isinstance(fromnodes, list):
+            model.add_node(actfn, inputs=fromnodes, name=node_name, merge_mode='sum')
+        else:
+            model.add_node(actfn, input=fromnodes, name=node_name, merge_mode='sum')
+
+        return node_name
+    else:
+        model.add(actfn)
+        return ''
+
+def get_init_for_activation(name):
+    if name == 'mrelu' or name == 'mrelu-t':
+        return 'uniform'
+    else:
+        return 'he_uniform'
 
 class PersistentHistory(keras.callbacks.Callback):
     def __init__(self, log_name, check_file=False):
@@ -208,22 +228,21 @@ class PersistentHistory(keras.callbacks.Callback):
 
         write_dict_as_csv(self.log_name, d)
 
-def get_mnist_model(activation, lr):
+def get_mnist_model(activation, initialization, lr):
     model = Sequential()
-    model.add(Dense(512, input_shape=(784,)))
+    model.add(Dense(512, input_shape=(784,), init=initialization))
     get_activation(model, activation)
     model.add(Dropout(0.2))
-    model.add(Dense(512))
+    model.add(Dense(512, init=initialization))
     get_activation(model, activation)
     model.add(Dropout(0.2))
     model.add(Dense(10))
     model.add(Activation('softmax'))
-    print('Compiled with LR: {}'.format(lr))
     sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
     return model
 
-def build_deepcnet(l, k, activation,
+def build_deepcnet(l, k, activation, initialization,
                   first_c3=False,
                   dropout=None,
                   nin=False,
@@ -233,9 +252,9 @@ def build_deepcnet(l, k, activation,
 
     model.add(ZeroPadding2D((1, 1), input_shape=(3, 32, 32)))
     if first_c3:
-        model.add(Convolution2D(k, 3, 3, border_mode='same'))
+        model.add(Convolution2D(k, 3, 3, border_mode='same', init=initialization))
     else:
-        model.add(Convolution2D(k, 2, 2, border_mode='same'))
+        model.add(Convolution2D(k, 2, 2, border_mode='same', init=initialization))
     get_activation(model, activation)
     if batch_normalization:
         model.add(BatchNormalization())
@@ -243,7 +262,7 @@ def build_deepcnet(l, k, activation,
     model.add(MaxPooling2D(pool_size=(2, 2)))
     if nin:
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(k, 1, 1))
+        model.add(Convolution2D(k, 1, 1, init=initialization))
         get_activation(model, activation)
         if batch_normalization:
             model.add(BatchNormalization())
@@ -251,27 +270,27 @@ def build_deepcnet(l, k, activation,
 
     for i in range(2, l+1):
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(k*i, 2, 2, border_mode='same'))
+        model.add(Convolution2D(k*i, 2, 2, border_mode='same', init=initialization))
         get_activation(model, activation)
         if batch_normalization:
             model.add(BatchNormalization())
         model.add(MaxPooling2D(pool_size=(2, 2)))
         if nin:
             model.add(ZeroPadding2D((1, 1)))
-            model.add(Convolution2D(k*i, 1, 1))
+            model.add(Convolution2D(k*i, 1, 1, init=initialization))
             get_activation(model, activation)
             if batch_normalization:
                 model.add(BatchNormalization())
         if dropout: model.add(Dropout(dropout))
 
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(k*(l+1), 2, 2, border_mode='same'))
+    model.add(Convolution2D(k*(l+1), 2, 2, border_mode='same', init=initialization))
     get_activation(model, activation)
     if batch_normalization:
         model.add(BatchNormalization())
     if final_c1:
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(k*(l+1), 1, 1))
+        model.add(Convolution2D(k*(l+1), 1, 1, init=initialization))
         get_activation(model, activation)
         if batch_normalization:
             model.add(BatchNormalization())
@@ -280,20 +299,20 @@ def build_deepcnet(l, k, activation,
     model.add(Activation('softmax'))
     return model
 
-def get_deepcnet(nettype, activation, dropout, batch_normalization):
+def get_deepcnet(nettype, activation, initialization, dropout, batch_normalization):
     nettype = nettype.lower()
     if nettype == 'reg':
-        return build_deepcnet(5, 75, activation,
+        return build_deepcnet(5, 75, activation, initialization,
                                    dropout=dropout,
                                    final_c1=True,
                                    batch_normalization=batch_normalization)
     elif nettype == 'adv':
-        return build_deepcnet(5, 120, activation,
+        return build_deepcnet(5, 120, activation, initialization,
                                    dropout=dropout,
                                    final_c1=True,
                                    batch_normalization=batch_normalization)
     elif nettype == 'small':
-        return build_deepcnet(5, 25, activation,
+        return build_deepcnet(5, 25, activation, initialization,
                                    dropout=dropout,
                                    final_c1=True,
                                    batch_normalization=batch_normalization)
@@ -305,5 +324,80 @@ def compile_deepcnet(model, lr):
     sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
 
-def build_resnet_50():
+
+def build_resnet_block(model, activation, initialization, n, fromnode, blockname,
+                       num_filters, kernel_size, change_dim=None):
+    lastnode = fromnode
+    for i in range(1, n+1):
+        model.add_node(Convolution2D(num_filters, kernel_size, kernel_size,
+                                     border_mode='same', init=initialization),
+                       input=lastnode,
+                       name='{}_conv{}'.format(blockname, i))
+        model.add_node(BatchNormalization(),
+                  input='{}_conv{}'.format(blockname, i),
+                  name='{}_bn{}'.format(blockname, i))
+        if n == i:
+            if change_dim:
+                model.add_node(Convolution2D(change_dim, 1, 1,
+                                             border_mode='same', init=initialization),
+                               input=fromnode,
+                               name='{}_change_dim'.format(blockname))
+                lastnode = get_activation(model, activation, graph=True, i=i,
+                                      fromnodes=['{}_bn{}'.format(blockname, i),
+                                                 '{}_change_dim'.format(blockname)],
+                                      blockname=blockname)
+            else:
+                lastnode = get_activation(model, activation, graph=True, i=i,
+                                      fromnodes=['{}_bn{}'.format(blockname, i),
+                                                 fromnode],
+                                      blockname=blockname)
+        else:
+            lastnode = get_activation(model, activation, graph=True, i=i,
+                                      fromnodes='{}_bn{}'.format(blockname, i),
+                                      blockname=blockname)
+
+    return lastnode
+
+def build_resnet_34(activation, initialization,  seed=64):
     model = Graph()
+    model.add_input(name='input', input_shape=(3, 32, 32))
+    model.add_node(ZeroPadding2D((1, 1)), input='input', name='zp')
+    model.add_node(Convolution2D(seed, 3, 3, border_mode='same', init='he_normal'),
+                    input='zp', name='conv1a')
+    model.add_node(MaxPooling2D(pool_size=(1, 1)), input='conv1a', name='mp1')
+
+    conv2a = build_resnet_block(model, activation, initialization, 2, 'mp1', 'conv2a', seed, 3)
+    conv2b = build_resnet_block(model, activation, initialization, 2, conv2a, 'conv2b', seed, 3)
+    conv2c = build_resnet_block(model, activation, initialization, 2, conv2b, 'conv2c', seed, 3)
+    model.add_node(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)), input=conv2c, name='mp2')
+
+    conv3a = build_resnet_block(model, activation, initialization, 2, 'mp2', 'conv3a', seed*2, 3,
+                                change_dim=seed*2)
+    conv3b = build_resnet_block(model, activation, initialization, 2, conv3a, 'conv3b', seed*2, 3)
+    conv3c = build_resnet_block(model, activation, initialization, 2, conv3b, 'conv3c', seed*2, 3)
+    conv3d = build_resnet_block(model, activation, initialization, 2, conv3c, 'conv3d', seed*2, 3)
+    model.add_node(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)), input=conv3d, name='mp3')
+
+    conv4a = build_resnet_block(model, activation, initialization, 2, 'mp3', 'conv4a', seed*4, 3,
+                                change_dim=seed*4)
+    conv4b = build_resnet_block(model, activation, initialization, 2, conv4a, 'conv4b', seed*4, 3)
+    conv4c = build_resnet_block(model, activation, initialization, 2, conv4b, 'conv4c', seed*4, 3)
+    conv4d = build_resnet_block(model, activation, initialization, 2, conv4c, 'conv4d', seed*4, 3)
+    conv4e = build_resnet_block(model, activation, initialization, 2, conv4d, 'conv4e', seed*4, 3)
+    model.add_node(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)), input=conv4e, name='mp4')
+
+    conv5a = build_resnet_block(model, activation, initialization, 2, 'mp4', 'conv5a', seed*8, 3,
+                                change_dim=seed*8)
+    conv5b = build_resnet_block(model, activation, initialization, 2, conv5a, 'conv5b', seed*8, 3)
+    conv5c = build_resnet_block(model, activation, initialization, 2, conv5b, 'conv5c', seed*8, 3)
+
+    model.add_node(Flatten(), input=conv5c, name='flatten')
+    model.add_node(Dense(1000, init=initialization), input='flatten', name='fc1000')
+    fc1000act = get_activation(model, activation, graph=True, i='', fromnodes='fc1000', blockname='dc1000_act')
+    model.add_node(Dense(100, init=initialization), input=fc1000act, name='fc100')
+    model.add_output(name='output', input='fc100')
+    return model
+
+def compile_resnet(model, lr):
+    sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(loss={'output':'categorical_crossentropy'}, optimizer=sgd)
