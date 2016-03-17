@@ -44,4 +44,4 @@ for t in range(trials):
     score = model.evaluate(X_test, Y_test, show_accuracy=True, verbose=0)
     scores.append(score[0])
     accs.append(score[1])
-    util.write_dict_as_csv('{}-mnist-std.csv'.format(activation), {'val_loss':scores, 'val_acc':accs})
+    util.write_dict_as_csv('{}-mnist-std-{}.csv'.format(activation, learning_rate), {'val_loss':scores, 'val_acc':accs})
