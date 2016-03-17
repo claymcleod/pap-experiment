@@ -368,30 +368,27 @@ def build_resnet_34(activation, initialization,  seed=64):
 
     conv2a = build_resnet_block(model, activation, initialization, 2, 'mp1', 'conv2a', seed, 3)
     conv2b = build_resnet_block(model, activation, initialization, 2, conv2a, 'conv2b', seed, 3)
-    conv2c = build_resnet_block(model, activation, initialization, 2, conv2b, 'conv2c', seed, 3)
-    model.add_node(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)), input=conv2c, name='mp2')
+    #conv2c = build_resnet_block(model, activation, initialization, 2, conv2b, 'conv2c', seed, 3)
+    model.add_node(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)), input=conv2b, name='mp2')
 
-    conv3a = build_resnet_block(model, activation, initialization, 2, 'mp2', 'conv3a', seed*2, 3,
-                                change_dim=seed*2)
+    conv3a = build_resnet_block(model, activation, initialization, 2, 'mp2', 'conv3a', seed*2, 3, change_dim=seed*2)
     conv3b = build_resnet_block(model, activation, initialization, 2, conv3a, 'conv3b', seed*2, 3)
-    conv3c = build_resnet_block(model, activation, initialization, 2, conv3b, 'conv3c', seed*2, 3)
-    conv3d = build_resnet_block(model, activation, initialization, 2, conv3c, 'conv3d', seed*2, 3)
-    model.add_node(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)), input=conv3d, name='mp3')
+    #conv3c = build_resnet_block(model, activation, initialization, 2, conv3b, 'conv3c', seed*2, 3)
+    #conv3d = build_resnet_block(model, activation, initialization, 2, conv3c, 'conv3d', seed*2, 3)
+    model.add_node(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)), input=conv3b, name='mp3')
 
-    conv4a = build_resnet_block(model, activation, initialization, 2, 'mp3', 'conv4a', seed*4, 3,
-                                change_dim=seed*4)
+    conv4a = build_resnet_block(model, activation, initialization, 2, 'mp3', 'conv4a', seed*4, 3, change_dim=seed*4)
     conv4b = build_resnet_block(model, activation, initialization, 2, conv4a, 'conv4b', seed*4, 3)
-    conv4c = build_resnet_block(model, activation, initialization, 2, conv4b, 'conv4c', seed*4, 3)
-    conv4d = build_resnet_block(model, activation, initialization, 2, conv4c, 'conv4d', seed*4, 3)
-    conv4e = build_resnet_block(model, activation, initialization, 2, conv4d, 'conv4e', seed*4, 3)
-    model.add_node(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)), input=conv4e, name='mp4')
+    #conv4c = build_resnet_block(model, activation, initialization, 2, conv4b, 'conv4c', seed*4, 3)
+    #conv4d = build_resnet_block(model, activation, initialization, 2, conv4c, 'conv4d', seed*4, 3)
+    #conv4e = build_resnet_block(model, activation, initialization, 2, conv4d, 'conv4e', seed*4, 3)
+    model.add_node(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)), input=conv4b, name='mp4')
 
-    conv5a = build_resnet_block(model, activation, initialization, 2, 'mp4', 'conv5a', seed*8, 3,
-                                change_dim=seed*8)
+    conv5a = build_resnet_block(model, activation, initialization, 2, 'mp4', 'conv5a', seed*8, 3, change_dim=seed*8)
     conv5b = build_resnet_block(model, activation, initialization, 2, conv5a, 'conv5b', seed*8, 3)
-    conv5c = build_resnet_block(model, activation, initialization, 2, conv5b, 'conv5c', seed*8, 3)
+    #conv5c = build_resnet_block(model, activation, initialization, 2, conv5b, 'conv5c', seed*8, 3)
 
-    model.add_node(Flatten(), input=conv5c, name='flatten')
+    model.add_node(Flatten(), input=conv5b, name='flatten')
     model.add_node(Dense(1000, init=initialization), input='flatten', name='fc1000')
     fc1000act = get_activation(model, activation, graph=True, i='', fromnodes='fc1000', blockname='dc1000_act')
     model.add_node(Dense(100, init=initialization), input=fc1000act, name='fc100')
