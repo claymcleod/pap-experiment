@@ -362,8 +362,7 @@ def build_resnet_34(activation, initialization,  seed=64):
     model = Graph()
     model.add_input(name='input', input_shape=(3, 32, 32))
     model.add_node(ZeroPadding2D((1, 1)), input='input', name='zp')
-    model.add_node(Convolution2D(seed, 3, 3, border_mode='same', init='he_normal'),
-                    input='zp', name='conv1a')
+    model.add_node(Convolution2D(seed, 3, 3, border_mode='same', init='he_normal'), input='zp', name='conv1a')
     model.add_node(MaxPooling2D(pool_size=(1, 1)), input='conv1a', name='mp1')
 
     conv2a = build_resnet_block(model, activation, initialization, 2, 'mp1', 'conv2a', seed, 3)

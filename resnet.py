@@ -6,7 +6,7 @@ from keras.callbacks import ModelCheckpoint
 
 parser = argparse.ArgumentParser(description='CIFAR100 Resnet script for PAP experiment')
 parser.add_argument('activation', type=str, help='activation function')
-parser.add_argument('-b', '--batchsize', default=256,
+parser.add_argument('-b', '--batchsize', default=128,
                     type=int, help='batch size')
 parser.add_argument('-e', '--epochs', default=100,
                     type=int, help='epochs')
@@ -35,7 +35,7 @@ print()
 
 X_train, X_test, Y_train, Y_test = util.get_cifar100()
 print("Building...")
-resnet = util.build_resnet_34(activation, initialization, seed=32)
+resnet = util.build_resnet_34(activation, initialization)
 print("Compiling...")
 util.compile_resnet(resnet, learning_rate)
 cb = util.PersistentHistory(results_file)
