@@ -12,7 +12,7 @@ parser.add_argument('-e', '--epochs', default=100,
                     type=int, help='epochs')
 parser.add_argument('-l', '--lr', default=0.001,
                     type=float, help='learning_rate')
-parser.add_argument('-s', '--seed', default=64,
+parser.add_argument('-s', '--seed', default=32,
                     type=int, help='seed for resnet')
 args = parser.parse_args()
 
