@@ -178,11 +178,10 @@ def get_activation(model, name, graph=False, i=None, fromnodes=None, blockname=N
         return ''
 
 def get_init_for_activation(name):
-    # if name == 'mrelu' or name == 'mrelu-t':
-    #     return 'uniform'
-    # else:
-    #     return 'he_uniform'
-    return 'he_uniform'
+    if name == 'mrelu' or name == 'mrelu-t':
+        return 'uniform'
+    else:
+        return 'he_uniform'
 
 class PersistentHistory(keras.callbacks.Callback):
     def __init__(self, log_name, check_file=False):
