@@ -16,6 +16,8 @@ parser.add_argument('-d', '--dropout', default=None,
                     type=float, help='Dropout rate')
 parser.add_argument('-n', '--normalization', default=False,
                     action='store_true', help='batch normalization')
+parser.add_argument('-s', '--scheduledlr', default=False,
+                    action='store_true', help='Scheduled learning rate (overrides lr)')
 args = parser.parse_args()
 
 
@@ -26,9 +28,26 @@ learning_rate = args.lr
 dropout = args.dropout
 batch_normalization = args.normalization
 epochs = args.epochs
-results_file = './cifar10-deepcnet_{}-{}-{}.csv'.format(nettype, activation,
+slr = args.scheduledlr
+results_file = './cifar10-deepcnet_{}-{}-{}'.format(nettype, activation,
                                                         learning_rate)
 initialization = util.get_init_for_activation(activation)
+cbs = []
+if slr:
+    from keras.callbacks import LearningRateScheduler
+    def schedule(i):
+        if i <= 5:
+            return 0.001
+        if i <= 20:
+            return 0.1
+        else:
+            return 0.5
+    cbs.append(LearningRateScheduler(schedule))
+    results_file = results_file+'_scheduled'
+
+cb = util.PersistentHistory(results_file+'.csv')
+cbs.append(cb)
+
 print()
 print('/==========================\\')
 print("| Dataset: CIFAR10 (DeepCNet)")
@@ -40,6 +59,8 @@ print("| Batch normalization: {}".format(batch_normalization))
 print("| Dropout: {}".format(dropout))
 print("| Epochs: {}".format(epochs))
 print("| Initialization: {}".format(initialization))
+print("| Scheduled learning rate: {}".format(slr))
+print("| File: {}".format(results_file))
 print('\\==========================/')
 print()
 
@@ -47,7 +68,8 @@ print()
 X_train, X_test, Y_train, Y_test = util.get_cifar10()
 dcn = util.get_deepcnet(nettype, activation, initialization, dropout, batch_normalization)
 util.compile_deepcnet(dcn, learning_rate)
-cb = util.PersistentHistory(results_file)
+
+
 dcn.fit(X_train,
         Y_train,
         batch_size=batch_size,
@@ -55,4 +77,4 @@ dcn.fit(X_train,
         show_accuracy=True,
         shuffle=True,
         validation_data=(X_test, Y_test),
-        callbacks=[cb])
+        callbacks=cbs)
