@@ -39,9 +39,9 @@ if slr:
         if i <= 5:
             return 0.001
         if i <= 20:
-            return 0.1
+            return 0.01
         else:
-            return 0.5
+            return 0.05
     cbs.append(LearningRateScheduler(schedule))
     results_file = results_file+'_scheduled'
 
