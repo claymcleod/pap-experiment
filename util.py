@@ -154,6 +154,8 @@ def get_activation(model, name, graph=False, i=None, fromnodes=None, blockname=N
     actfn = None
     if name == 'mrelu':
         actfn = mrelu()
+    elif name == 'mrelu-bias':
+        actfn = mrelu(bcoefs=[1.0, 0.0])
     elif name == 'mrelu-t':
         actfn = mrelu(threshold=True)
     elif name == 'prelu':
