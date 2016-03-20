@@ -8,7 +8,7 @@ parser.add_argument('activation', type=str, help='activation function')
 parser.add_argument('nettype', type=str, help='net type - reg, adv, small')
 parser.add_argument('-b', '--batchsize', default=128,
                     type=int, help='batch size')
-parser.add_argument('-e', '--epochs', default=50,
+parser.add_argument('-e', '--epochs', default=100,
                     type=int, help='epochs')
 parser.add_argument('-l', '--lr', default=0.001,
                     type=float, help='learning_rate')
