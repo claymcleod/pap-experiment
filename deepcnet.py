@@ -29,21 +29,23 @@ dropout = args.dropout
 batch_normalization = args.normalization
 epochs = args.epochs
 slr = args.scheduledlr
+modifier = learning_rate
+if slr:
+    modifier = 'scheduled'
 results_file = './cifar10-deepcnet_{}-{}-{}'.format(nettype, activation,
-                                                        learning_rate)
+                                                        modifier)
 initialization = util.get_init_for_activation(activation)
 cbs = []
 if slr:
     from keras.callbacks import LearningRateScheduler
     def schedule(i):
         if i <= 5:
-            return 0.001
-        if i <= 20:
             return 0.01
+        if i <= 20:
+            return 0.1
         else:
-            return 0.05
+            return 0.2
     cbs.append(LearningRateScheduler(schedule))
-    results_file = results_file+'_scheduled'
 
 cb = util.PersistentHistory(results_file+'.csv')
 cbs.append(cb)
