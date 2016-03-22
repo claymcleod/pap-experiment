@@ -27,7 +27,8 @@ def check_session_cores(NUM_CORES):
     sess = tf.Session(
         config=tf.ConfigProto(inter_op_parallelism_threads=int(NUM_CORES),
                               intra_op_parallelism_threads=int(NUM_CORES)))
-    KTF._set_session(sess)
+    print(KTF)
+    KTF.set_session(sess)
     print("Setting session to have {} cores".format(NUM_CORES))
 
 NUM_CORES = os.environ.get('CORES')
@@ -79,10 +80,19 @@ def get_cifar100():
     X_test = X_test.astype('float32') / 255
     return X_train, X_test, Y_train, Y_test
 
+def f1(): return 1
+def f0(): return 0
+
+from keras.backend import _BACKEND
+
+
 def step(x):
     """Theano step function"""
-
-    return K.switch(x > 0, 1, 0)
+    if (_BACKEND == 'tensorflow'):
+        import tensorflow as tf
+        return tf.select(tf.python.math_ops.greater(x, 0), K.ones_like(x), K.zeros_like(x))
+    else:
+        return K.switch(x > 0, 1, 0)
 
 def relu_integral(x):
     """ReLU piecewise integral"""
@@ -154,10 +164,12 @@ def get_activation(model, name, graph=False, i=None, fromnodes=None, blockname=N
     actfn = None
     if name == 'mrelu':
         actfn = mrelu()
-    elif name == 'mrelubias':
+    elif name == 'mreluall':
         actfn = mrelu(bcoefs=[1.0, 0.0])
+    elif name == 'mrelubias':
+        actfn = mrelu(bcoefs=[0.8, 0.2])
     elif name == 'mrelubias-t':
-        actfn = mrelu(threshold=True, bcoefs=[1.0, 0.0])
+        actfn = mrelu(threshold=True, bcoefs=[0.8, 0.2])
     elif name == 'mrelu-t':
         actfn = mrelu(threshold=True)
     elif name == 'prelu':
@@ -182,10 +194,10 @@ def get_activation(model, name, graph=False, i=None, fromnodes=None, blockname=N
         return ''
 
 def get_init_for_activation(name):
-    # if name == 'mrelu' or name == 'mrelu-t':
-    #     return 'uniform'
-    # else:
-    #     return 'he_uniform'
+#     if 'mrelu' in name:
+#         return 'uniform'
+#     else:
+#         return 'he_uniform'
     return 'he_uniform'
 
 class PersistentHistory(keras.callbacks.Callback):
@@ -363,7 +375,7 @@ def build_resnet_block(model, activation, initialization, n, fromnode, blockname
 
     return lastnode
 
-def build_resnet_34(activation, initialization,  seed=64):
+def build_resnet_34(activation, initialization, dims, seed=64):
     model = Graph()
     model.add_input(name='input', input_shape=(3, 32, 32))
     model.add_node(ZeroPadding2D((1, 1)), input='input', name='zp')
@@ -393,10 +405,10 @@ def build_resnet_34(activation, initialization,  seed=64):
     #conv5c = build_resnet_block(model, activation, initialization, 2, conv5b, 'conv5c', seed*8, 3)
 
     model.add_node(Flatten(), input=conv5b, name='flatten')
-    model.add_node(Dense(1000, init=initialization), input='flatten', name='fc1000')
+    model.add_node(Dense(dims*10, init=initialization), input='flatten', name='fc1000')
     fc1000act = get_activation(model, activation, graph=True, i='', fromnodes='fc1000', blockname='dc1000_act')
-    model.add_node(Dense(100, init=initialization), input=fc1000act, name='fc100')
-    model.add_output(name='output', input='fc100')
+    model.add_node(Dense(dims, init=initialization), input=fc1000act, name='fc{}'.format(dims))
+    model.add_output(name='output', input='fc{}'.format(dims))
     return model
 
 def compile_resnet(model, lr):
