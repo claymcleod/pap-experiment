@@ -76,7 +76,7 @@ print()
 
 X_train, X_test, Y_train, Y_test = util.get_cifar10()
 dcn = util.get_deepcnet(nettype, activation, initialization, dropout, batch_normalization)
-util.plot(dcn, to_file='dcn.png')
+#util.plot(dcn, to_file='dcn.png')
 util.compile_deepcnet(dcn, learning_rate)
 
 
