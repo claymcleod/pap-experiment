@@ -31,7 +31,7 @@ epochs = args.epochs
 slr = args.scheduledlr
 modifier = learning_rate
 if slr:
-    modifier = 'scheduled'
+    modifier = 'scheduled_(5)0.05_(inf)0.25'
 results_file = './cifar10-deepcnet_{}-{}-{}'.format(nettype, activation,
                                                         modifier)
 initialization = util.get_init_for_activation(activation)
@@ -40,12 +40,18 @@ if slr:
     from keras.callbacks import LearningRateScheduler
     def schedule(i):
         if i <= 5:
-            return 0.01
-        if i <= 20:
-            return 0.1
+            return 0.05
         else:
-            return 0.2
+            return 0.25
     cbs.append(LearningRateScheduler(schedule))
+
+# from keras.callbacks import LearningRateScheduler
+# def schedule(i):
+#     lr = 0.01 + i * 0.01
+#     print('Learning rate: {}'.format(lr))
+#     return lr
+#
+# cbs.append(LearningRateScheduler(schedule))
 
 cb = util.PersistentHistory(results_file+'.csv')
 cbs.append(cb)
@@ -55,7 +61,8 @@ print('/==========================\\')
 print("| Dataset: CIFAR10 (DeepCNet)")
 print("| Net type: {}".format(nettype))
 print("| Activation: {}".format(activation))
-print("| Learning rate: {}".format(learning_rate))
+if not slr:
+    print("| Learning rate: {}".format(learning_rate))
 print("| Batch size: {}".format(batch_size))
 print("| Batch normalization: {}".format(batch_normalization))
 print("| Dropout: {}".format(dropout))
@@ -69,7 +76,9 @@ print()
 
 X_train, X_test, Y_train, Y_test = util.get_cifar10()
 dcn = util.get_deepcnet(nettype, activation, initialization, dropout, batch_normalization)
+util.plot(dcn, to_file='dcn.png')
 util.compile_deepcnet(dcn, learning_rate)
+
 
 
 dcn.fit(X_train,

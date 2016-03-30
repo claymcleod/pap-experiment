@@ -14,6 +14,8 @@ parser.add_argument('-l', '--lr', default=0.001,
                     type=float, help='learning_rate')
 parser.add_argument('-s', '--seed', default=32,
                     type=int, help='seed for resnet')
+parser.add_argument('-d', '--dataset', default='cifar100',
+                    type=str, help='Dataset')
 args = parser.parse_args()
 
 
@@ -22,11 +24,12 @@ batch_size = args.batchsize
 learning_rate = args.lr
 epochs = args.epochs
 seed = args.seed
-results_file = './cifar100-resnet-seed{}_{}-{}.csv'.format(seed, activation, learning_rate)
+dataset = args.dataset.upper()
+results_file = './{}-resnet-seed{}_{}-{}.csv'.format(dataset, seed, activation, learning_rate)
 initialization = util.get_init_for_activation(activation)
 print()
 print('/==========================\\')
-print("| Dataset: CIFAR100 (Resnet)")
+print("| Dataset: {} (Resnet)".format(dataset))
 print("| Activation: {}".format(activation))
 print("| Learning rate: {}".format(learning_rate))
 print("| Batch size: {}".format(batch_size))
@@ -36,10 +39,19 @@ print("| Initialization: {}".format(initialization))
 print('\\==========================/')
 print()
 
+if dataset == 'CIFAR100':
+    X_train, X_test, Y_train, Y_test = util.get_cifar100()
+    dims = 100
+elif dataset == 'CIFAR10':
+    X_train, X_test, Y_train, Y_test = util.get_cifar10()
+    dims = 10
+else:
+    import sys
+    print('Invalid dataset: {}'.format(dataset))
+    sys.exit(1)
 
-X_train, X_test, Y_train, Y_test = util.get_cifar100()
 print("Building...")
-resnet = util.build_resnet_34(activation, initialization)
+resnet = util.build_resnet_34(activation, initialization, dims)
 print("Compiling...")
 util.compile_resnet(resnet, learning_rate)
 cb = util.PersistentHistory(results_file)
