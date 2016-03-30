@@ -31,7 +31,7 @@ epochs = args.epochs
 slr = args.scheduledlr
 modifier = learning_rate
 if slr:
-    modifier = 'scheduled_(5)0.05_(inf)0.25'
+    modifier = 'scheduled_(5)0.05_(inf)0.125'
 results_file = './cifar10-deepcnet_{}-{}-{}'.format(nettype, activation,
                                                         modifier)
 initialization = util.get_init_for_activation(activation)
@@ -42,7 +42,7 @@ if slr:
         if i <= 5:
             return 0.05
         else:
-            return 0.25
+            return 0.125
     cbs.append(LearningRateScheduler(schedule))
 
 # from keras.callbacks import LearningRateScheduler
