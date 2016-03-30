@@ -36,10 +36,10 @@ NUM_CORES = os.environ.get('CORES')
 if NUM_CORES:
     check_session_cores(NUM_CORES)
 
-def plot(model, to_file='model.png'):
-    from keras.utils.visualize_util import to_graph
-    graph = to_graph(model, show_shape=True)
-    graph.write_png(to_file)
+# def plot(model, to_file='model.png'):
+#     from keras.utils.visualize_util import to_graph
+#     graph = to_graph(model, show_shape=True)
+#     graph.write_png(to_file)
 
 def write_dict_as_csv(filename, d):
     if os.path.isfile(filename):
